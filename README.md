@@ -450,6 +450,8 @@ Medida: coeficiente de variação (CV) do número de cotistas de cada classe ao 
 | R$ 100 mi a 1 bi | 0,089 | 0,021 | 1.400 |
 | acima de R$ 1 bi | 0,069 | 0,034 | 585 |
 
+![Tabela da Pergunta 2](img/13_p2_tabela.png)
+
 ![CV de cotistas por faixa de porte](img/14_p2_grafico.png)
 
 **Discussão.** Pela média, **não há relação monotônica** entre porte e estabilidade: a faixa de
@@ -475,6 +477,8 @@ crescimento de rotatividade.
 | Concentrado (< 10) | + R$ 11,1 mi | R$ 0,0 mi | + R$ 30,0 bi | 2.706 |
 | Intermediário (10 a 1.000) | + R$ 4,3 mi | − R$ 0,8 mi | + R$ 4,0 bi | 924 |
 | Pulverizado (> 1.000) | − R$ 48,1 mi | − R$ 18,7 mi | − R$ 25,2 bi | 524 |
+
+![Tabela da Pergunta 3](img/15_p3_tabela.png)
 
 ![Captação líquida por perfil de base](img/16_p3_grafico.png)
 
