@@ -1,9 +1,9 @@
-# MVP de Engenharia de Dados — Fundos de Crédito Privado (CVM)
+# MVP de Engenharia de Dados: Fundos de Crédito Privado (CVM)
 
-**Pós-graduação em Ciência de Dados e Analytics — PUC-Rio**
+**Pós-graduação em Ciência de Dados e Analytics, PUC-Rio**
 **Aluno:** Richard Bryan Eulalio
 **Plataforma:** Databricks Free Edition (serverless, Unity Catalog, Delta Lake)
-**Fonte:** Portal de Dados Abertos da CVM — https://dados.cvm.gov.br (licença ODbL)
+**Fonte:** Portal de Dados Abertos da CVM, https://dados.cvm.gov.br (licença ODbL)
 
 Pipeline em arquitetura medalhão (bronze → silver → gold) sobre os informes diários de fundos
 de investimento da CVM, com recorte na indústria de fundos de crédito privado, de setembro de
@@ -23,8 +23,8 @@ de investimento da CVM, com recorte na indústria de fundos de crédito privado,
 
 ### Problema
 
-Fundos de crédito privado carregam ativos de baixa liquidez — debêntures, CRIs, CRAs, cotas de
-FIDC — e oferecem ao cotista prazos de resgate curtos. Esse descasamento entre ativo e passivo
+Fundos de crédito privado carregam ativos de baixa liquidez (debêntures, CRIs, CRAs, cotas de
+FIDC) e oferecem ao cotista prazos de resgate curtos. Esse descasamento entre ativo e passivo
 é estrutural na indústria brasileira, e entender como o passivo se comporta (quem entra, quem
 sai, quando e em que volume) é central para gestores, distribuidores e para o regulador.
 
@@ -37,8 +37,8 @@ comportamento do passivo desses fundos.
 
 ### Recorte
 
-O recorte de crédito privado usa a `Classificacao_Anbima` do cadastro de classes — critério
-oficial e auditável — e não padrões no nome do fundo:
+O recorte de crédito privado usa a `Classificacao_Anbima` do cadastro de classes, critério
+oficial e auditável, e não padrões no nome do fundo:
 
 - Renda Fixa Duração Livre Crédito Livre
 - Renda Fixa Duração Livre Grau de Investimento
@@ -87,7 +87,7 @@ Três decisões orientam a camada bronze:
   efetivamente chegou.
 - **Leitura arquivo a arquivo, unida por nome de coluna** (`unionByName(allowMissingColumns=True)`).
   Ler a pasta inteira seria mais curto, mas desalinharia os dados se o layout mudasse entre
-  meses — um risco real com a migração para a RCVM 175.
+  meses, um risco real com a migração para a RCVM 175.
 - **Metadados de controle em cada linha** (`_arquivo_origem`, `_data_ingestao`), para rastrear
   de qual arquivo veio cada registro. Nada é filtrado nem deduplicado: a bronze funciona como
   cofre de evidências.
@@ -137,7 +137,7 @@ orientadas às perguntas.
 ```
                      dim_tempo
                          |
-   dim_gestor —— dim_classe —— fato_informe
+   dim_gestor ---- dim_classe ---- fato_informe
 ```
 
 A `dim_gestor` se liga à fato através da `dim_classe` (snowflake de um nível), porque o gestor
@@ -158,7 +158,7 @@ arquivo. A chave natural da fato é `cnpj_classe` + `id_subclasse` + `data`.
   master-feeder. Não substitui a hierarquia real de investimento, que a base não fornece.
 - **Chave substituta de gestor** por MD5 do nome normalizado, porque a CVM não publica
   identificador de gestor.
-- **`dim_tempo` derivada das datas presentes na fato**, e não de um calendário sintético — cada
+- **`dim_tempo` derivada das datas presentes na fato**, e não de um calendário sintético: cada
   linha é um dia com informe publicado. Os atributos de fim de mês, fim de trimestre e dezembro
   existem para testar objetivamente o efeito de calendário da Pergunta 5.
 - **Cadastro como fotografia**: o registro de classes reflete a situação no último dia útil,
@@ -203,18 +203,18 @@ Uma linha por classe, com atributos herdados do fundo (casca). Origem: `bronze.c
 | Coluna | Tipo | Descrição | Domínio |
 |---|---|---|---|
 | `cnpj_classe` | string | CNPJ da classe, apenas dígitos. Chave primária | 14 dígitos |
-| `id_fundo` | string | Identificador do registro do fundo na CVM | — |
-| `nome_classe` | string | Denominação social da classe | — |
+| `id_fundo` | string | Identificador do registro do fundo na CVM | |
+| `nome_classe` | string | Denominação social da classe | |
 | `classificacao_anbima` | string | Classificação ANBIMA | Nulo para fundos estruturados e não adaptados à RCVM 175 |
-| `classificacao_cvm` | string | Classificação CVM | — |
-| `situacao` | string | Situação cadastral na data de extração | — |
-| `data_inicio` | date | Data de início da classe | — |
+| `classificacao_cvm` | string | Classificação CVM | |
+| `situacao` | string | Situação cadastral na data de extração | |
+| `data_inicio` | date | Data de início da classe | |
 | `credito_privado` | boolean | Derivado: classificação ANBIMA pertence ao recorte | TRUE / FALSE |
 | `classe_feeder` | boolean | Derivado: denominação contém "EM COTAS" ou "FIC". Aproximação | TRUE / FALSE |
-| `nome_fundo` | string | Denominação do fundo (casca) | — |
-| `administrador` | string | Administrador fiduciário | — |
-| `gestor` | string | Gestor da carteira | — |
-| `tipo_fundo` | string | Tipo do fundo no cadastro | — |
+| `nome_fundo` | string | Denominação do fundo (casca) | |
+| `administrador` | string | Administrador fiduciário | |
+| `gestor` | string | Gestor da carteira | |
+| `tipo_fundo` | string | Tipo do fundo no cadastro | |
 | `id_gestor` | string | Chave substituta: MD5 do nome do gestor normalizado. Join com `dim_gestor` | Hash de 32 caracteres |
 
 #### `silver.dim_gestor`
@@ -256,7 +256,7 @@ Série diária agregada da indústria de crédito privado. Grão: um dia. Origem
 | `n_classes` | long | Classes distintas com informe no dia |
 | `grandes_ausentes` | long | Quantas das 100 maiores classes não reportaram no dia, considerando só datas entre o primeiro e o último informe de cada classe |
 | `reporte_completo` | boolean | FALSE quando alguma das 100 maiores está ausente. Dias FALSE devem ser excluídos de análises de série temporal |
-| `ano_mes`, `ultimo_dia_util_mes`, `ultimo_dia_util_trimestre`, `dezembro` | — | Herdados da `dim_tempo` |
+| `ano_mes`, `ultimo_dia_util_mes`, `ultimo_dia_util_trimestre`, `dezembro` | | Herdados da `dim_tempo` |
 
 #### `gold.resumo_classe_credito_privado`
 Resumo por classe no período. Grão: uma classe. Origem: `silver.fato_informe` join `dim_classe`.
@@ -264,7 +264,7 @@ Resumo por classe no período. Grão: uma classe. Origem: `silver.fato_informe` 
 | Coluna | Tipo | Descrição |
 |---|---|---|
 | `cnpj_classe` | string | Chave primária |
-| `nome_classe`, `classificacao_anbima`, `id_gestor`, `gestor`, `classe_feeder` | — | Herdados da `dim_classe` |
+| `nome_classe`, `classificacao_anbima`, `id_gestor`, `gestor`, `classe_feeder` | | Herdados da `dim_classe` |
 | `pl_medio`, `pl_maximo` | double | PL da classe (somadas as subclasses) no período |
 | `captacao_periodo`, `resgate_periodo`, `captacao_liquida_periodo` | double | Fluxos acumulados no período |
 | `cotistas_medio`, `cotistas_desvio` | double | Média e desvio padrão do número de cotistas da classe por dia |
@@ -339,7 +339,7 @@ A aba **Lineage** do Unity Catalog desenha automaticamente o grafo bronze → si
 | Acurácia | PL ≤ 0 | 25.642 registros (0,44%) | Removidos: classes em encerramento |
 | Completude | Cota nula ou ≤ 0 | 22.621 registros (0,39%) | Removidos |
 | Consistência | Zero cotistas | 20.334 registros (0,35%) | Mantidos: classe ativa sem cotista no dia não é erro |
-| Consistência | Data de competência inválida | 0 | — |
+| Consistência | Data de competência inválida | 0 | |
 | Consistência | Registros em feriados ANBIMA | 6 registros de 6 classes | Removidos (ver abaixo) |
 | Completude | Classes sem classificação ANBIMA | 10.174 classes | Causa conhecida: fundos estruturados e não adaptados à RCVM 175 |
 | Integridade referencial | Classes de crédito privado no cadastro × com informe | 4.847 × 4.473 | Diferença de 374: registradas sem operação na janela ou encerradas antes de 09/2025 |
@@ -359,16 +359,16 @@ semana seguinte. A investigação descartou as duas explicações óbvias:
 - **Não foi queda geral de reporte:** o número de classes variou só de 4.011 para 4.007.
 
 A comparação classe a classe entre 12/01 e 13/01 identificou **sete classes de crédito privado
-sem informe no dia**, somando R$ 189,7 bi de PL na véspera — seis delas administradas pelo Banco
-do Brasil (BB Top DI, BB Top DI Longo Prazo, BB Top Renda Fixa Instituições Financeiras Crédito
+sem informe no dia**, somando R$ 189,7 bi de PL na véspera. Seis delas são administradas pelo Banco
+do Brasil: BB Top DI, BB Top DI Longo Prazo, BB Top Renda Fixa Instituições Financeiras Crédito
 Privado, BB RF Liquidez, BB Renda Fixa Referenciado DI Longo Prazo Private e um FIF Tesouro Renda
-Fixa). Conclusão: **ausência pontual de reporte, não movimento patrimonial.**
+Fixa. Conclusão: **ausência pontual de reporte, não movimento patrimonial.**
 
 ![Diagnóstico de 13/01/2026](img/10_diagnostico_1301.png)
 
 **Decisão: não aplicar forward fill.** (a) Preencher assumiria patrimônio constante, o que é
 suposição e não dado; (b) criaria inconsistência entre a série de PL e a de captação líquida,
-apresentadas lado a lado; (c) apagaria uma característica real da base — a dependência da série
+apresentadas lado a lado; (c) apagaria uma característica real da base, que é a dependência da série
 agregada em poucos reportantes de grande porte. Em vez disso, os dias afetados são **marcados**.
 
 ### Detecção sistemática de reporte incompleto
@@ -391,7 +391,7 @@ qualidade é tão importante quanto construí-lo:
    de classes fora do recorte. Como a `dim_tempo` é derivada das datas da fato, eles criavam três
    dias úteis inexistentes. Os feriados passaram a ser removidos na silver.
 
-**Resultado final: 6 dias de 231 com reporte incompleto** — 26/11/2025 (1 ausente), 13 a
+**Resultado final: 6 dias de 231 com reporte incompleto**: 26/11/2025 (1 ausente), 13 a
 16/01/2026 (6 a 7 ausentes, o episódio do BB) e 02/03/2026 (2). Em 13/01 o indicador marca 6,
 e não 7, porque uma das sete classes ausentes não está entre as 100 maiores.
 
@@ -410,7 +410,7 @@ informe nas Perguntas 2 e 3; mais de 250 dias corridos na Pergunta 4, para que o
 acumulado seja comparável). Por isso os `n` variam entre perguntas: 4.154 classes nas Perguntas 2
 e 3, e 3.812 na Pergunta 4, de um total de 4.473.
 
-### Pergunta 1 — Evolução do PL e papel da captação líquida
+### Pergunta 1. Evolução do PL e papel da captação líquida
 
 ![Série de PL e captação líquida](img/11_p1_grafico.png)
 
@@ -439,15 +439,15 @@ série `pl_total_ex_feeder` mitiga, mas não elimina, porque a marcação de fee
 Como a captação também é duplicada nas mesmas estruturas, a **proporção** entre captação e
 valorização é menos afetada do que o nível.
 
-### Pergunta 2 — Porte e estabilidade da base de cotistas
+### Pergunta 2. Porte e estabilidade da base de cotistas
 
 Medida: coeficiente de variação (CV) do número de cotistas de cada classe ao longo do período.
 
 | Faixa de PL médio | CV médio | CV mediano | n |
 |---|---|---|---|
 | até R$ 10 mi | 0,084 | 0,020 | 222 |
-| R$ 10–100 mi | 0,060 | 0,000 | 1.947 |
-| R$ 100 mi–1 bi | 0,089 | 0,021 | 1.400 |
+| R$ 10 a 100 mi | 0,060 | 0,000 | 1.947 |
+| R$ 100 mi a 1 bi | 0,089 | 0,021 | 1.400 |
 | acima de R$ 1 bi | 0,069 | 0,034 | 585 |
 
 ![CV de cotistas por faixa de porte](img/14_p2_grafico.png)
@@ -468,12 +468,12 @@ cotistas de forma constante tem CV alto. A pergunta, portanto, tem resposta nega
 hipótese intuitiva ("fundos maiores têm base mais estável"), mas a métrica não separa
 crescimento de rotatividade.
 
-### Pergunta 3 — Pulverização da base e captação líquida
+### Pergunta 3. Pulverização da base e captação líquida
 
 | Perfil (cotistas médios) | Captação líquida média | Mediana | Total | n |
 |---|---|---|---|---|
 | Concentrado (< 10) | + R$ 11,1 mi | R$ 0,0 mi | + R$ 30,0 bi | 2.706 |
-| Intermediário (10–1.000) | + R$ 4,3 mi | − R$ 0,8 mi | + R$ 4,0 bi | 924 |
+| Intermediário (10 a 1.000) | + R$ 4,3 mi | − R$ 0,8 mi | + R$ 4,0 bi | 924 |
 | Pulverizado (> 1.000) | − R$ 48,1 mi | − R$ 18,7 mi | − R$ 25,2 bi | 524 |
 
 ![Captação líquida por perfil de base](img/16_p3_grafico.png)
@@ -489,7 +489,7 @@ direta dos dados. O grupo "concentrado" mistura fundos exclusivos e restritos co
 cujos cotistas são outros fundos. A base da CVM não identifica o tipo de cotista, e separar essas
 duas origens exigiria a composição de carteira dos feeders.
 
-### Pergunta 4 — Dispersão de retorno por classificação ANBIMA
+### Pergunta 4. Dispersão de retorno por classificação ANBIMA
 
 | Classificação | Retorno médio | Mediano | Desvio padrão | p25 | p75 | Intervalo interquartil | n |
 |---|---|---|---|---|---|---|---|
@@ -513,7 +513,7 @@ duas origens exigiria a composição de carteira dos feeders.
 
 O desvio padrão alto do grau de investimento de duração livre vem de poucas classes muito fora
 da curva. O histograma mostra o resto: as classes de grau de investimento convergem num pico
-estreito em torno de 13% — o carrego do período —, enquanto o crédito livre se espalha entre
+estreito em torno de 13%, que é o carrego do período, enquanto o crédito livre se espalha entre
 5% e 12% e concentra a cauda negativa. A diferença entre as categorias é de **forma** da
 distribuição, e não apenas de magnitude.
 
@@ -527,7 +527,7 @@ produziu retornos médios negativos, implausíveis para renda fixa de crédito. 
 cotas de subclasses diferentes na mesma classe. Os dois erros foram detectados por validação de
 plausibilidade e revisão do grão, não por falha de execução.
 
-### Pergunta 5 — Dias de resgate atípico
+### Pergunta 5. Dias de resgate atípico
 
 Os dez maiores dias de resgate, entre os dias com reporte completo:
 
@@ -563,8 +563,8 @@ Teste do efeito de calendário, com os atributos da `dim_tempo`:
 **Discussão.** Os resgates atípicos são **concentrados e sazonais**, não espalhados. Seis dos dez
 maiores dias são de dezembro de 2025, e três dos quatro restantes são fins de mês. Em dezembro,
 o resgate médio diário é 35% maior que no resto do período, e a captação líquida média fica
-negativa. O padrão aponta para efeito de calendário — planejamento tributário e fechamento de
-balanço —, e não para estresse de crédito difuso. Em 30/12, mesmo com o décimo maior resgate,
+negativa. O padrão aponta para efeito de calendário (planejamento tributário e fechamento de
+balanço), e não para estresse de crédito difuso. Em 30/12, mesmo com o décimo maior resgate,
 a captação líquida foi positiva, o que sugere recomposição imediata.
 
 Um detalhe chama atenção: o último dia útil do trimestre tem resgate médio igual ao de um dia
@@ -587,8 +587,8 @@ indicativo. Mesmo excluindo maio e novembro, os fins de mês continuam acima do 
 
 ## Autoavaliação
 
-**Objetivos atingidos.** O pipeline cobre as quatro etapas técnicas do enunciado — carga,
-modelagem com catálogo, pipeline em camadas e análise — e as cinco perguntas foram respondidas
+**Objetivos atingidos.** O pipeline cobre as quatro etapas técnicas do enunciado (carga,
+modelagem com catálogo, pipeline em camadas e análise), e as cinco perguntas foram respondidas
 com dados. Três delas têm resposta clara (P1, P3 e P5); duas (P2 e P4) têm resposta condicionada
 à métrica, e o texto mostra por quê, em vez de escolher a métrica que confirma a hipótese.
 
