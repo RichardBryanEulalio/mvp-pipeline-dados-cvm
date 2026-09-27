@@ -317,7 +317,11 @@ calculado por subclasse, com janela ordenada por data, e ponderado pelo PL.
 
 ### Linhagem
 
-A aba **Lineage** do Unity Catalog desenha automaticamente o grafo bronze → silver → gold:
+A aba **Lineage** do Unity Catalog registra automaticamente as dependências entre tabelas a
+partir das execuções dos notebooks. O grafo abaixo mostra a `gold.fluxo_diario_credito_privado`
+sendo construída a partir das três tabelas silver (`fato_informe`, `dim_classe` e `dim_tempo`),
+com o notebook `03_gold_modelagem` em cada ligação. A mesma relação existe entre bronze e
+silver e pode ser expandida no próprio grafo.
 
 ![Linhagem da gold.fluxo_diario_credito_privado](img/05_lineage.png)
 
